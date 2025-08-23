@@ -106,6 +106,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            [ -s "$HOME/.nvm/nvm.sh" ] && \. "$HOME/.nvm/nvm.sh"
             cd /var/www/discord-aoo/current
             sops decrypt ecosystem.config.cjs.enc > ecosystem.config.cjs
             sudo chmod +x ./bin/*.sh
