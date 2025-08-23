@@ -96,13 +96,13 @@ export class ListObjectivesCommand extends Command {
           });
         }
       }
-
-      return;
     }
 
     await interaction.reply({
       content: 'No objectives to display',
       flags: MessageFlags.Ephemeral
     });
+
+    return;
   }
 }
