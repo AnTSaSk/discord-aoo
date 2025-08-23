@@ -105,9 +105,9 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          envs: RELEASE_NAME
           script: |
             cd /var/www/discord-aoo/current
             sops decrypt ecosystem.config.cjs.enc > ecosystem.config.cjs
+            sudo chmod +x ./bin/*.sh
             ./bin/install.sh
             ./bin/pm2.sh
