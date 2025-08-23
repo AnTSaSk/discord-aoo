@@ -31,10 +31,10 @@ jobs:
           path: |
             ./bin
             ./dist
-            ./node_modules
             ./scripts
             ./ecosystem.config.cjs.enc
             ./package.json
+            ./pnpm-workspace.yaml
 
   # 2.0 - Deployment
   deploy:
