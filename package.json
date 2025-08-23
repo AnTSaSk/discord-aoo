@@ -14,9 +14,9 @@
   "main": "dist/src/main.js",
   "type": "module",
   "scripts": {
-    "sync-db": "tsx --env-file=.env ./scripts/sync-db.ts",
-    "build": "tsc && tsc-alias",
+    "sync-db": "node dist/scripts/sync-db.js",
     "dev": "node --env-file=.env.dev dist/src/main.js",
+    "build": "tsc && tsc-alias",
     "start": "node dist/src/main.js"
   },
   "packageManager": "pnpm@10.15.0+sha512.486ebc259d3e999a4e8691ce03b5cac4a71cbeca39372a9b762cb500cfdf0873e2cb16abe3d951b1ee2cf012503f027b98b6584e4df22524e0c7450d9ec7aa7b",
