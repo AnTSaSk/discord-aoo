@@ -1,0 +1,75 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    # tags:
+    ## `any` branch by default
+    # branches: []
+
+jobs:
+  # 1.0 - Build
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ">=24.6.0"
+          cache: "pnpm"
+      - run: pnpm install
+      - run: pnpm build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bot
+          path: |
+            ./dist
+
+  # 2.0 - Deployment
+  deploy:
+    name: Deploy on server
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v5
+        with:
+          name: bot
+          path: bot
+
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          known_hosts: unnecessary
+
+      - name: Adding Known Hosts
+        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Generate release name
+        id: release_name
+        run: echo "release_name=$(date "+%Y%m%d%H%M")" >> $GITHUB_ENV
+
+      - name: Deploy with Rsync
+        run: |
+          rsync -avz -e ssh bot ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/discord-aoo/releases/${{ env.release_name }}/
+
+      - name: Change current release version
+        uses: appleboy/ssh-action@v1
+        env:
+          RELEASE_NAME: ${{ env.release_name }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: RELEASE_NAME
+          script: |
+            cd /var/www/discord-aoo
+            ln -snf "releases/$RELEASE_NAME" current
