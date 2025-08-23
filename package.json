@@ -1,0 +1,47 @@
+{
+  "name": "discord-bot-aoo",
+  "version": "0.0.1",
+  "author": "Alexis Besson me@alexis-besson.dev <https://alexis-besson.dev/>",
+  "license": "GPL-3.0-or-later",
+  "description": "Discord bot specially created for Albion Online game, it allows player to add/list/remove objectives (nodes, cores and vortexes) with all the necessary informations like the type of objective, it's rarity, the map and the time remaining before objective unlock",
+  "keywords": [
+    "Discord",
+    "Bot",
+    "Albion Online",
+    "Objectives",
+    "Slash commands"
+  ],
+  "main": "dist/src/main.js",
+  "type": "module",
+  "scripts": {
+    "sync-db": "tsx --env-file=.env ./scripts/sync-db.ts",
+    "build": "tsc && tsc-alias",
+    "dev": "node --env-file=.env.dev dist/src/main.js",
+    "start": "node --env-file=.env dist/src/main.js"
+  },
+  "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad",
+  "dependencies": {
+    "@logtail/pino": "0.5.5",
+    "@sapphire/framework": "5.3.6",
+    "dayjs": "1.11.13",
+    "discord-api-types": "0.38.20",
+    "discord.js": "14.21.0",
+    "node-cron": "4.2.1",
+    "pino": "9.9.0",
+    "sequelize": "6.37.7",
+    "sqlite3": "5.1.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.33.0",
+    "@sapphire/ts-config": "5.0.1",
+    "@types/node": "22.14.0",
+    "dotenv": "17.2.1",
+    "eslint": "9.33.0",
+    "globals": "16.3.0",
+    "pino-pretty": "13.1.1",
+    "tsc-alias": "1.8.16",
+    "tsx": "4.20.4",
+    "typescript": "5.9.2",
+    "typescript-eslint": "8.39.1"
+  }
+}
