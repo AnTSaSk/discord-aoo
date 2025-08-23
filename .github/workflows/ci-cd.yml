@@ -62,7 +62,7 @@ jobs:
 
       - name: Deploy with Rsync
         run: |
-          rsync -avz -e ssh /bot ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/discord-aoo/releases/${{ env.release_name }}/
+          rsync -avz -e ssh ./bot/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/discord-aoo/releases/${{ env.release_name }}/
 
       - name: Change current release version
         uses: appleboy/ssh-action@v1
