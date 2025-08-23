@@ -29,6 +29,7 @@ jobs:
         with:
           name: bot
           path: |
+            ./bin
             ./dist
             ./scripts
             ./ecosystem.config.cjs.enc
@@ -108,8 +109,5 @@ jobs:
           script: |
             cd /var/www/discord-aoo/current
             sops decrypt ecosystem.config.cjs.enc > ecosystem.config.cjs
-            corepack enable pnpm && corepack install -g pnpm@10.15.0
-            npm install pm2 -g
-            pm2 delete DiscordAOO || :
-            pm2 start
-            pm2 save
+            ./bin/install.sh
+            ./bin/pm2.sh
