@@ -30,7 +30,7 @@ jobs:
           name: bot
           path: |
             ./dist
-            ecosystem.config.js.enc
+            ./ecosystem.config.js.enc
 
   # 2.0 - Deployment
   deploy:
