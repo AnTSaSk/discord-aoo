@@ -16,7 +16,7 @@ dist-ssr
 .env.dev
 .env.prod
 config.json
-ecosystem.config.js
+ecosystem.config.cjs
 
 # Database
 *.sqlite

@@ -31,7 +31,7 @@ jobs:
           path: |
             ./dist
             ./scripts
-            ./ecosystem.config.js.enc
+            ./ecosystem.config.cjs.enc
             ./package.json
 
   # 2.0 - Deployment
@@ -88,9 +88,6 @@ jobs:
       - deploy
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ">=24.6.0"
 
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
@@ -110,7 +107,9 @@ jobs:
           envs: RELEASE_NAME
           script: |
             cd /var/www/discord-aoo/current
-            sops decrypt ecosystem.config.js.enc > ecosystem.config.js
+            sops decrypt ecosystem.config.cjs.enc > ecosystem.config.cjs
+            corepack enable pnpm && corepack install -g pnpm@10.15.0
+            npm install pm2 -g
             pm2 delete DiscordAOO || :
             pm2 start
             pm2 save
