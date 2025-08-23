@@ -15,10 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ">=24.6.0"
-          # cache: "pnpm"
+          cache: "pnpm"
+
       - run: pnpm install
       - run: pnpm build
 
@@ -28,6 +30,7 @@ jobs:
           name: bot
           path: |
             ./dist
+            ecosystem.config.js.enc
 
   # 2.0 - Deployment
   deploy:
@@ -73,3 +76,36 @@ jobs:
           script: |
             cd /var/www/discord-aoo
             ln -snf "releases/$RELEASE_NAME" current
+
+  # 3.0 - Decrypt and start
+  deploy:
+    name: Decrypt and start process
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - deploy
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          known_hosts: unnecessary
+
+      - name: Adding Known Hosts
+        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Decrypt ecosystem file for PM2 and start/restart process
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: RELEASE_NAME
+          script: |
+            cd /var/www/discord-aoo/current
+            sops decrypt ecosystem.config.js.enc > ecosystem.config.js
+            pm2 delete DiscordAOO || :
+            pm2 start
+            pm2 save
