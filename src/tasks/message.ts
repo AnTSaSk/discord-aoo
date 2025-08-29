@@ -59,7 +59,7 @@ export const deletePreviousMessage = async (client: SapphireClient, channelId: s
   }
 }
 
-const displayObjective = (data: Objective[]): any[] => {
+const displayObjective = (client: SapphireClient, data: Objective[]): any[] => {
   const content: any[] = [];
   const objectiveIndex: Record<string, number>[] = [];
 
@@ -131,11 +131,12 @@ const displayObjective = (data: Objective[]): any[] => {
 
         const itemData = objectiveIndex.find((o: Record<string, number>) => o.id === item.id);
         const maintenance = item.maintenanceAdded ? ':white_check_mark:' : ':x:';
+        const user = client.users.cache.find((user) => user.id === item.userId);
 
         const textDisplayList = new TextDisplayBuilder()
           .setContent(
             `- #${itemData?.index} — ${objectiveRarity} —— **${dayjs(item.time).utc().format('HH:mm')}** UTC (<t:${dayjs(item.time).unix()}:R>) —— **${item.map}**
--# Maintenance added: ${maintenance} —— Objective added by <@${item.userId}>`
+-# Maintenance added: ${maintenance} —— Objective added by ${user?.displayName}`
           );
 
         content.push(textDisplayList);
@@ -150,12 +151,12 @@ const displayObjective = (data: Objective[]): any[] => {
   return content;
 }
 
-export const getMessage = (type: String, data: any): any[] => {
+export const getMessage = (client: SapphireClient, type: String, data: any): any[] => {
   let content = [];
 
   switch (type) {
     case 'objective':
-      content = displayObjective(data);
+      content = displayObjective(client, data);
       break;
   }
 

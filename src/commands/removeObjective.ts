@@ -122,7 +122,7 @@ export class RemoveObjectiveCommand extends Command {
 
           // @ts-ignore
           await channel.send({
-            components: getMessage('objective', objectives),
+            components: getMessage(this.container.client, 'objective', objectives),
             flags: MessageFlags.IsComponentsV2,
           });
         }

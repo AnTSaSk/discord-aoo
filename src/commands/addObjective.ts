@@ -274,7 +274,7 @@ It will be available at ${time.format('HH:mm')} UTC (<t:${time.unix()}:R>) on th
 
           // @ts-ignore
           await channel.send({
-            components: getMessage('objective', currentObjectives),
+            components: getMessage(this.container.client, 'objective', currentObjectives),
             flags: MessageFlags.IsComponentsV2,
           });
         }

@@ -91,9 +91,11 @@ export class ListObjectivesCommand extends Command {
 
           // @ts-ignore
           await channel.send({
-            components: getMessage('objective', currentObjectives),
+            components: getMessage(this.container.client, 'objective', currentObjectives),
             flags: MessageFlags.IsComponentsV2,
           });
+
+          return;
         }
       }
     }

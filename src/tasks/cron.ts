@@ -74,7 +74,7 @@ export const cronTask = async (logger: Logger, client: Client<true>) => {
 
           // @ts-ignore
           await channel.send({
-            components: getMessage('objective', objectives),
+            components: getMessage(client, 'objective', objectives),
             flags: MessageFlags.IsComponentsV2,
           });
         }
