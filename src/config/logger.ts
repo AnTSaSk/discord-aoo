@@ -14,7 +14,7 @@ export const getLogger = (): Logger => {
       minimumLevel: "trace",
     };
 
-    if (!process.env.APP_DEV_MODE) {
+    if (process.env.APP_DEV_MODE == 'false') {
       target = '@logtail/pino';
       options = {
         sourceToken: String(process.env.APP_LOGTAIL_TOKEN),
