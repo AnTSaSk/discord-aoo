@@ -81,6 +81,8 @@ jobs:
           script: |
             cd /var/www/discord-aoo
             ln -snf "releases/$RELEASE_NAME" current
+            cd current
+            ln -snf /var/www/discord-aoo/database.sqlite database.sqlite
 
   # 3.0 - Decrypt and start
   start:
