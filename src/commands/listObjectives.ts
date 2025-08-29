@@ -33,7 +33,7 @@ export class ListObjectivesCommand extends Command {
     registry.registerChatInputCommand((builder) =>
       builder
         .setName(this.name)
-        .setDescription(this.name)
+        .setDescription(this.description)
         .setIntegrationTypes(integrationTypes)
         .setContexts(contexts)
     );
