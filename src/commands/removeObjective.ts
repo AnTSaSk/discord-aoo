@@ -97,9 +97,9 @@ export class RemoveObjectiveCommand extends Command {
         // @FIXME: Check and rework condition to avoid user removing other's objectives
         if (
           // @ts-ignore
-          !channel?.permissionsFor(interaction.user.id).has(PermissionsBitField.Flags.Administrator) ||
+          !channel?.permissionsFor(interaction.user.id).has(PermissionsBitField.Flags.Administrator) &&
           // @ts-ignore
-          !channel?.permissionsFor(interaction.user.id).has(PermissionsBitField.Flags.ManageMessages) ||
+          !channel?.permissionsFor(interaction.user.id).has(PermissionsBitField.Flags.ManageMessages) &&
           interaction.user.id !== objective.userId
         ) {
           await interaction.reply({
