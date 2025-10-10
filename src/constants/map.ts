@@ -149,6 +149,7 @@ export const MAP_PARCHSAND_DROUGHT = 'Parchsand Drought';
 export const MAP_RAZORROCK_BANK = 'Razorrock Bank';
 export const MAP_RAZORROCK_CHASM = 'Razorrock Chasm';
 export const MAP_RAZORROCK_EDGE = 'Razorrock Edge';
+export const MAP_RAZORROCK_GULCH = 'Razorrock Gulch';
 export const MAP_RAZORROCK_PASSAGE = 'Razorrock Passage';
 export const MAP_RAZORROCK_RAVINE = 'Razorrock Ravine';
 export const MAP_RAZORROCK_VALLEY = 'Razorrock Valley';
@@ -432,6 +433,7 @@ export const MAPS = [
   MAP_RAZORROCK_BANK,
   MAP_RAZORROCK_CHASM,
   MAP_RAZORROCK_EDGE,
+  MAP_RAZORROCK_GULCH,
   MAP_RAZORROCK_PASSAGE,
   MAP_RAZORROCK_RAVINE,
   MAP_RAZORROCK_VALLEY,
