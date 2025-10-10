@@ -98,6 +98,23 @@ export class ListObjectivesCommand extends Command {
           return;
         }
       }
+
+      if (channel) {
+        deletePreviousMessage(this.container.client, channel.id);
+
+        await interaction.reply({
+          content: 'No objectives to display!',
+          flags: MessageFlags.Ephemeral
+        });
+
+        // @ts-ignore
+        await channel.send({
+          components: getMessage(this.container.client, 'empty'),
+          flags: MessageFlags.IsComponentsV2,
+        });
+
+        return;
+      }
     }
 
     await interaction.reply({

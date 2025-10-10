@@ -8,7 +8,7 @@ import { Op } from 'sequelize';
 import { deleteObjective, findAllObjective, findObjectiveByGuildId } from '@/services/objective.service.js';
 
 // Tasks
-import { getMessage } from '@/tasks/message.js';
+import { deletePreviousMessage, getMessage } from '@/tasks/message.js';
 
 dayjs.extend(utc);
 
@@ -68,15 +68,24 @@ export const cronTask = async (logger: Logger, client: Client<true>) => {
         const channel = await client.channels.cache.get(data.channelId);
         const objectives = await findObjectiveByGuildId(data.guildId);
 
-        // @TODO: Even when there is no objectives, send messages to remind users to add objectives
-        if (objectives.length > 0) {
+        if (channel) {
+          deletePreviousMessage(client, channel.id);
+
           logger.info(`CRON - Send new message on Guild: ${data.guildId} on the channel: ${data.channelId}`);
 
-          // @ts-ignore
-          await channel.send({
-            components: getMessage(client, 'objective', objectives),
-            flags: MessageFlags.IsComponentsV2,
-          });
+          if (objectives.length > 0) {
+            // @ts-ignore
+            await channel.send({
+              components: getMessage(client, 'objective', objectives),
+              flags: MessageFlags.IsComponentsV2,
+            });
+          } else {
+            // @ts-ignore
+            await channel.send({
+              components: getMessage(client, 'empty'),
+              flags: MessageFlags.IsComponentsV2,
+            });
+          }
         }
       }
     }

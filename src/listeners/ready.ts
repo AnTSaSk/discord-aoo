@@ -30,6 +30,6 @@ export class ReadyListener extends Listener {
 
     logger.info(`All models were synchronized successfully`);
 
-    cron.schedule('0 6 * * *', () => cronTask(logger, client));
+    cron.schedule('*/30 * * * *', () => cronTask(logger, client));
   }
 }

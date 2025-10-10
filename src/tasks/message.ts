@@ -151,12 +151,30 @@ const displayObjective = (client: SapphireClient, data: Objective[]): any[] => {
   return content;
 }
 
-export const getMessage = (client: SapphireClient, type: String, data: any): any[] => {
+const displayNoObjective = (): any[] => {
+  const content: any[] = [];
+
+  const title = new TextDisplayBuilder().setContent('## Objective Timers ##');
+  content.push(title);
+
+  const message = new TextDisplayBuilder().setContent(
+    `There is no active timer.
+Use command \`/add\` to create a new one!`
+  );
+  content.push(message);
+
+  return content;
+}
+
+export const getMessage = (client: SapphireClient, type: String, data?: any): any[] => {
   let content = [];
 
   switch (type) {
     case 'objective':
       content = displayObjective(client, data);
+      break;
+    case 'empty':
+      content = displayNoObjective();
       break;
   }
 
