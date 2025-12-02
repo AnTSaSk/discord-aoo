@@ -21,27 +21,26 @@
   },
   "packageManager": "pnpm@10.15.0+sha512.486ebc259d3e999a4e8691ce03b5cac4a71cbeca39372a9b762cb500cfdf0873e2cb16abe3d951b1ee2cf012503f027b98b6584e4df22524e0c7450d9ec7aa7b",
   "dependencies": {
-    "@logtail/pino": "0.5.6",
-    "@sapphire/framework": "5.3.7",
-    "dayjs": "1.11.18",
-    "discord-api-types": "0.38.29",
-    "discord.js": "14.23.2",
+    "@logtail/pino": "0.5.7",
+    "@sapphire/framework": "5.4.0",
+    "@sequelize/core": "7.0.0-alpha.46",
+    "@sequelize/postgres": "7.0.0-alpha.46",
+    "dayjs": "1.11.19",
+    "discord.js": "14.25.1",
     "node-cron": "4.2.1",
-    "pino": "10.0.0",
-    "sequelize": "6.37.7",
-    "sqlite3": "5.1.7"
+    "pino": "10.1.0"
   },
   "devDependencies": {
-    "@eslint/js": "9.37.0",
-    "@sapphire/ts-config": "5.0.1",
+    "@eslint/js": "9.39.1",
+    "@sapphire/ts-config": "5.0.2",
     "@types/node": "22.14.0",
     "dotenv": "17.2.3",
-    "eslint": "9.37.0",
-    "globals": "16.4.0",
+    "eslint": "9.39.1",
+    "globals": "16.5.0",
     "pino-pretty": "13.1.2",
     "tsc-alias": "1.8.16",
     "tsx": "4.20.6",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.46.0"
+    "typescript-eslint": "8.47.0"
   }
 }

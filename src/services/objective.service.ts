@@ -1,4 +1,4 @@
-import type { FindOptions, InferAttributes } from 'sequelize';
+import type { FindOptions, InferAttributes } from '@sequelize/core';
 
 // Models
 import ObjectiveModel, { type Objective } from '@/models/objective.model.js';
