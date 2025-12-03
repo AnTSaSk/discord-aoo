@@ -6,6 +6,7 @@ import {
   MessageFlags,
   type SlashCommandStringOption,
 } from 'discord.js';
+import { Op } from '@sequelize/core';
 
 // Config
 import { getLogger } from '@/config/logger.js';
@@ -19,6 +20,7 @@ import { TYPE_CORE, TYPE_NODE_FIBER, TYPE_NODE_HIDE, TYPE_NODE_ORE, TYPE_NODE_WO
 import {
   createObjective,
   deleteObjective,
+  findAllObjective,
   findObjectiveByGuildId,
 } from '@/services/objective.service.js';
 
@@ -229,6 +231,49 @@ If the problem persist, please contact the Bot Developer.`,
       const channel = await this.container.client.channels.fetch(channelId);
       const time = getRelativeTime(new Date(), objectiveTime);
       const maintenance = isMaintenanceAdded(time);
+
+      // Avoid duplicate objective - Range of 8 minutes
+      const timeStart = time.subtract(4, 'minute');
+      const timeEnd = time.add(4, 'minute');
+
+      const identicalObjectives = await findAllObjective({
+        order: [
+          ['time', 'ASC'],
+        ],
+        where: {
+          guildId: {
+            [Op.eq]: guildId,
+          },
+          type: {
+            [Op.eq]: objectiveType,
+          },
+          rarity: {
+            [Op.eq]: objectiveRarity,
+          },
+          map: {
+            [Op.eq]: objectiveMap,
+          },
+          time: {
+            [Op.between]: [timeStart.toDate(), timeEnd.toDate()],
+          }
+        },
+      });
+
+      if (identicalObjectives.length > 0) {
+        logger.info(`Objective already exist -
+          GuildID: ${guildId},
+          Type: ${objectiveType},
+          Rarity: ${objectiveRarity},
+          Map: ${objectiveMap},
+          Time: ${objectiveTime}`);
+
+        await interaction.reply({
+          content: 'It appears that the objective you are trying to add already exists',
+          flags: MessageFlags.Ephemeral,
+        });
+
+        return;
+      }
 
       const newObjective = await createObjective({
         guildId,
