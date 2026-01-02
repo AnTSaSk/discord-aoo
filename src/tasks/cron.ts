@@ -54,16 +54,17 @@ export const cronTask = async (logger: Logger, client: Client<true>) => {
   }
 
   // For all guilds that have an updated list, send a new message
-  if (guildData) {
+  if (guildData.length >= 0) {
     logger.info('CRON - Loop on each Guild data with an updated list');
 
     for await (const data of guildData) {
       if (data) {
         const channel = await client.channels.cache.get(data.channelId);
-        const objectives = await findObjectiveByGuildId(data.guildId);
 
         if (channel) {
-          deletePreviousMessage(client, channel.id);
+          const objectives = await findObjectiveByGuildId(data.guildId);
+
+          await deletePreviousMessage(client, channel.id);
 
           logger.info(`CRON - Send new message on Guild: ${data.guildId} on the channel: ${data.channelId}`);
 
