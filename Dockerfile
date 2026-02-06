@@ -5,11 +5,10 @@ FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-# Install build dependencies for native modules (pg-native, etc.)
-RUN apk add --no-cache python3 make g++
-
-# Enable corepack for pnpm
-RUN corepack enable pnpm
+# Install build dependencies for native modules and enable pnpm
+# hadolint ignore=DL3018
+RUN apk add --no-cache python3 make g++ && \
+    corepack enable pnpm
 
 # Copy package files first for better layer caching
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -23,11 +22,9 @@ COPY tsconfig.json .sapphirerc.json ./
 COPY src ./src
 COPY scripts ./scripts
 
-# Build TypeScript with tsc-alias
-RUN pnpm build
-
-# Prune dev dependencies
-RUN pnpm prune --prod
+# Build TypeScript with tsc-alias and prune dev dependencies
+RUN pnpm build && \
+    pnpm prune --prod
 
 # Stage 2: Production
 FROM node:24-alpine AS production
