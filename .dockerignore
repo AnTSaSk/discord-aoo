@@ -1,0 +1,62 @@
+# Dependencies (will be installed fresh in container)
+node_modules
+.pnpm-store
+
+# Environment files (secrets should not be in image)
+.env
+.env.*
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs
+npm-debug.log*
+pnpm-debug.log*
+
+# Test
+coverage
+.nyc_output
+
+# Docker (no need to include in build context)
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# CI/CD
+.github
+
+# Documentation
+README.md
+CHANGELOG.md
+COPYING
+docs
+
+# Build artifacts (will be generated in container)
+dist
+build
+
+# PM2 config (not needed in Docker)
+ecosystem.config.cjs
+ecosystem.config.cjs.enc
+bin
+
+# SQLite database (using PostgreSQL in production)
+*.sqlite
+database.sqlite
+
+# Editor config
+.editorconfig
+eslint.config.mts

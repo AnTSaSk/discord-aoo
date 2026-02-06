@@ -1,0 +1,146 @@
+name: Build and Deploy Discord Bot
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Deploy to Docker Swarm
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262  # v1.0.3
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          BOT_NAME: ${{ vars.BOT_NAME }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: deploy
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: IMAGE_TAG,BOT_NAME,GITHUB_REPOSITORY
+          script: |
+            # Pull the new image
+            docker pull "ghcr.io/${GITHUB_REPOSITORY}:${IMAGE_TAG}"
+
+            # Export variables for docker-compose
+            export IMAGE_TAG="${IMAGE_TAG}"
+            export GITHUB_REPOSITORY="${GITHUB_REPOSITORY}"
+
+            # Deploy the stack (stop-first to avoid duplicate bot instances)
+            docker stack deploy \
+              --with-registry-auth \
+              -c "/opt/stacks/${BOT_NAME}/docker-compose.yml" \
+              "${BOT_NAME}"
+
+            # Wait for deployment
+            sleep 15
+
+            # Verify deployment
+            docker service ls --filter "name=${BOT_NAME}"
+
+      - name: Verify bot is running
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262  # v1.0.3
+        env:
+          BOT_NAME: ${{ vars.BOT_NAME }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: deploy
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: BOT_NAME
+          script: |
+            # Check service is running
+            for i in {1..20}; do
+              REPLICAS=$(docker service ls --filter "name=${BOT_NAME}" --format "{{.Replicas}}")
+              if [[ "$REPLICAS" == "1/1" ]]; then
+                echo "Bot deployed successfully: $REPLICAS"
+
+                # Check recent logs for startup confirmation
+                echo "=== Recent logs ==="
+                docker service logs --tail 30 "${BOT_NAME}_bot" 2>&1 | grep -E "(ready|Started|Logged|Connection has been established|error)" | tail -10 || true
+                exit 0
+              fi
+              echo "Waiting for bot to start... ($REPLICAS)"
+              sleep 5
+            done
+            echo "Deployment timeout"
+            docker service logs --tail 50 "${BOT_NAME}_bot" 2>&1 || true
+            exit 1
+
+      - name: Rollback on failure
+        if: failure()
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262  # v1.0.3
+        env:
+          BOT_NAME: ${{ vars.BOT_NAME }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: deploy
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: BOT_NAME
+          script: |
+            echo "Rolling back deployment..."
+            docker service rollback "${BOT_NAME}_bot" || true

@@ -1,10 +1,17 @@
-import 'dotenv/config';
 import { Sequelize } from '@sequelize/core';
 import { PostgresDialect } from '@sequelize/postgres';
+import { getRequiredSecret } from '@/utils/secrets.js';
 
-const dbName = process.env.APP_DB_NAME || '';
-const dbUser = process.env.APP_DB_USER || '';
-const dbPassword = process.env.APP_DB_PASSWORD || '';
+// Load dotenv only in development
+if (process.env.NODE_ENV !== 'production') {
+  await import('dotenv/config');
+}
+
+const dbName = getRequiredSecret('APP_DB_NAME', 'Database name');
+const dbUser = getRequiredSecret('APP_DB_USER', 'Database user');
+const dbPassword = getRequiredSecret('APP_DB_PASSWORD', 'Database password');
+const dbHost = process.env.APP_DB_HOST || 'localhost';
+const dbPort = parseInt(process.env.APP_DB_PORT || '5432', 10);
 
 const db = new Sequelize({
   // @ts-ignore
@@ -12,8 +19,8 @@ const db = new Sequelize({
   database: dbName,
   user: dbUser,
   password: dbPassword,
-  host: 'localhost',
-  port: 5432,
+  host: dbHost,
+  port: dbPort,
   ssl: false,
   clientMinMessages: 'notice',
 });

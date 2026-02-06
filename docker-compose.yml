@@ -1,0 +1,82 @@
+services:
+  bot:
+    image: ghcr.io/${GITHUB_REPOSITORY}:${IMAGE_TAG:-latest}
+    environment:
+      NODE_ENV: production
+      # Secrets file paths (for getSecret() function)
+      APP_BOT_TOKEN_FILE: /run/secrets/discord_bot_aoo_token
+      APP_CLIENT_ID_FILE: /run/secrets/discord_bot_aoo_client_id
+      APP_DB_NAME_FILE: /run/secrets/discord_bot_aoo_db_name
+      APP_DB_USER_FILE: /run/secrets/discord_bot_aoo_db_user
+      APP_DB_PASSWORD_FILE: /run/secrets/discord_bot_aoo_db_password
+      # Non-sensitive environment variables
+      APP_DEV_MODE: "false"
+      APP_DB_HOST: postgres
+      APP_DB_PORT: "5432"
+    secrets:
+      - discord_bot_aoo_token
+      - discord_bot_aoo_client_id
+      - discord_bot_aoo_db_name
+      - discord_bot_aoo_db_user
+      - discord_bot_aoo_db_password
+    networks:
+      - internal
+    deploy:
+      # IMPORTANT: Only 1 replica for Discord bots
+      # Multiple replicas = multiple bots responding to same events
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: stop-first  # Stop old before starting new (avoid duplicate responses)
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+        window: 120s
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 128M
+          cpus: "0.1"
+    # Security hardening
+    # NOTE: no-new-privileges is enforced at Docker daemon level (daemon.json)
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777,size=64m
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+networks:
+  internal:
+    external: true
+
+# Secrets must be created before deployment:
+# echo "<token>" | docker secret create discord_bot_aoo_token -
+# echo "<client_id>" | docker secret create discord_bot_aoo_client_id -
+# echo "discord_bot_aoo" | docker secret create discord_bot_aoo_db_name -
+# echo "<db_user>" | docker secret create discord_bot_aoo_db_user -
+# echo "<db_password>" | docker secret create discord_bot_aoo_db_password -
+secrets:
+  discord_bot_aoo_token:
+    external: true
+  discord_bot_aoo_client_id:
+    external: true
+  discord_bot_aoo_db_name:
+    external: true
+  discord_bot_aoo_db_user:
+    external: true
+  discord_bot_aoo_db_password:
+    external: true
