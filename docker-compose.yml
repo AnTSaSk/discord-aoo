@@ -13,7 +13,7 @@ services:
       APP_LOGTAIL_ENDPOINT_FILE: /run/secrets/discord_bot_aoo_logtail_endpoint
       # Non-sensitive environment variables
       APP_DEV_MODE: "false"
-      APP_DB_HOST: postgres
+      APP_DB_HOST: postgres_postgres  # Service name on shared network
       APP_DB_PORT: "5432"
     secrets:
       - discord_bot_aoo_token
