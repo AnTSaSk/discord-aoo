@@ -24,7 +24,8 @@ services:
       - discord_bot_aoo_logtail_token
       - discord_bot_aoo_logtail_endpoint
     networks:
-      - internal
+      - internal  # For database access (isolated, no internet)
+      - egress    # For Discord API access (outbound internet only)
     deploy:
       # IMPORTANT: Only 1 replica for Discord bots
       # Multiple replicas = multiple bots responding to same events
@@ -65,6 +66,8 @@ services:
 
 networks:
   internal:
+    external: true
+  egress:
     external: true
 
 # Secrets must be created before deployment:
