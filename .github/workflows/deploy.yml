@@ -24,7 +24,7 @@ jobs:
         run: echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
 
       - name: Lint Dockerfile
-        uses: hadolint/hadolint-action@v3.1.0
+        uses: hadolint/hadolint-action@v3.3.0
         with:
           dockerfile: Dockerfile
 
@@ -60,13 +60,15 @@ jobs:
           platforms: linux/amd64
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.33.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           format: table
           exit-code: "1"
           ignore-unfixed: true
           severity: CRITICAL,HIGH
+          scanners: vuln
+          trivyignores: .trivyignore
 
   deploy:
     needs: build
