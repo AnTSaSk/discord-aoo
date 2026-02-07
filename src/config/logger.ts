@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { type Logger, pino } from 'pino';
 import { getSecret } from '../utils/secrets.js';
 
