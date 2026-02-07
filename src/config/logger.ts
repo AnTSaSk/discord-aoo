@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { type Logger, pino } from 'pino';
+import { getSecret } from '../utils/secrets.js';
 
 let logger: Logger;
 
@@ -17,9 +18,9 @@ export const getLogger = (): Logger => {
     if (process.env.APP_DEV_MODE == 'false') {
       target = '@logtail/pino';
       options = {
-        sourceToken: String(process.env.APP_LOGTAIL_TOKEN),
+        sourceToken: String(getSecret('APP_LOGTAIL_TOKEN')),
         options: {
-          endpoint: String(process.env.APP_LOGTAIL_ENDPOINT),
+          endpoint: String(getSecret('APP_LOGTAIL_ENDPOINT')),
         }
       };
     }

@@ -33,8 +33,10 @@ export function getSecret(envVar: string): string | undefined {
  */
 export function getRequiredSecret(envVar: string, description: string): string {
   const value = getSecret(envVar);
+
   if (!value) {
     throw new Error(`Missing required secret: ${description}. Set ${envVar} or ${envVar}_FILE`);
   }
+
   return value;
 }

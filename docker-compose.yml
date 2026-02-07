@@ -9,6 +9,8 @@ services:
       APP_DB_NAME_FILE: /run/secrets/discord_bot_aoo_db_name
       APP_DB_USER_FILE: /run/secrets/discord_bot_aoo_db_user
       APP_DB_PASSWORD_FILE: /run/secrets/discord_bot_aoo_db_password
+      APP_LOGTAIL_TOKEN_FILE: /run/secrets/discord_bot_aoo_logtail_token
+      APP_LOGTAIL_ENDPOINT_FILE: /run/secrets/discord_bot_aoo_logtail_endpoint
       # Non-sensitive environment variables
       APP_DEV_MODE: "false"
       APP_DB_HOST: postgres
@@ -19,6 +21,8 @@ services:
       - discord_bot_aoo_db_name
       - discord_bot_aoo_db_user
       - discord_bot_aoo_db_password
+      - discord_bot_aoo_logtail_token
+      - discord_bot_aoo_logtail_endpoint
     networks:
       - internal
     deploy:
@@ -69,6 +73,8 @@ networks:
 # echo "discord_bot_aoo" | docker secret create discord_bot_aoo_db_name -
 # echo "<db_user>" | docker secret create discord_bot_aoo_db_user -
 # echo "<db_password>" | docker secret create discord_bot_aoo_db_password -
+# echo "<logtail_token>" | docker secret create discord_bot_aoo_logtail_token -
+# echo "https://in.logs.betterstack.com" | docker secret create discord_bot_aoo_logtail_endpoint -
 secrets:
   discord_bot_aoo_token:
     external: true
@@ -79,4 +85,8 @@ secrets:
   discord_bot_aoo_db_user:
     external: true
   discord_bot_aoo_db_password:
+    external: true
+  discord_bot_aoo_logtail_token:
+    external: true
+  discord_bot_aoo_logtail_endpoint:
     external: true
