@@ -5,32 +5,52 @@ let logger: Logger;
 
 export const getLogger = (): Logger => {
   if (!logger) {
-    let target = 'pino-pretty';
-    let options: Record<string, (boolean | string) | Record<string, boolean | string>> = {
-      colorize: true,
-      ignore: "pid,hostname",
-      translateTime: "dd-mm-yyyy hh:MM:ss TT",
-      levelFirst: true,
-      minimumLevel: "trace",
-    };
+    const isProduction = process.env.NODE_ENV === 'production';
+    const useLogtail = process.env.APP_DEV_MODE === 'false';
 
-    if (process.env.APP_DEV_MODE == 'false') {
-      target = '@logtail/pino';
-      options = {
-        sourceToken: String(getSecret('APP_LOGTAIL_TOKEN')),
-        options: {
-          endpoint: String(getSecret('APP_LOGTAIL_ENDPOINT')),
-        }
-      };
+    if (useLogtail) {
+      // Production with Logtail: send to both Logtail AND stdout
+      logger = pino({
+        level: 'info',
+        transport: {
+          targets: [
+            {
+              target: '@logtail/pino',
+              options: {
+                sourceToken: String(getSecret('APP_LOGTAIL_TOKEN')),
+                options: {
+                  endpoint: String(getSecret('APP_LOGTAIL_ENDPOINT')),
+                }
+              },
+              level: 'info',
+            },
+            {
+              target: 'pino/file',
+              options: { destination: 1 }, // 1 = stdout
+              level: 'info',
+            },
+          ],
+        },
+      });
+    } else if (isProduction) {
+      // Production without Logtail: plain JSON to stdout
+      logger = pino({ level: 'info' });
+    } else {
+      // Development: use pino-pretty for readable logs
+      logger = pino({
+        level: 'info',
+        transport: {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            ignore: "pid,hostname",
+            translateTime: "dd-mm-yyyy hh:MM:ss TT",
+            levelFirst: true,
+            minimumLevel: "trace",
+          },
+        },
+      });
     }
-
-    logger = pino({
-      level: 'info',
-      transport: {
-        target: target,
-        options: options,
-      },
-    });
   }
 
   return logger;
