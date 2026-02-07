@@ -59,6 +59,13 @@ jobs:
           cache-to: type=gha,mode=max
           platforms: linux/amd64
 
+      - name: Cache Trivy database
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/trivy
+          key: trivy-db-${{ github.run_id }}
+          restore-keys: trivy-db-
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.33.0
         with:
@@ -69,6 +76,8 @@ jobs:
           severity: CRITICAL,HIGH
           scanners: vuln
           trivyignores: .trivyignore
+          # Skip npm global modules (not used at runtime, only node binary is needed)
+          skip-dirs: /usr/local/lib/node_modules
 
   deploy:
     needs: build
