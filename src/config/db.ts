@@ -10,11 +10,10 @@ if (process.env.NODE_ENV !== 'production') {
 const dbName = getRequiredSecret('APP_DB_NAME', 'Database name');
 const dbUser = getRequiredSecret('APP_DB_USER', 'Database user');
 const dbPassword = getRequiredSecret('APP_DB_PASSWORD', 'Database password');
-const dbHost = process.env.APP_DB_HOST || 'localhost';
-const dbPort = parseInt(process.env.APP_DB_PORT || '5432', 10);
+const dbHost = process.env.APP_DB_HOST ?? 'localhost';
+const dbPort = parseInt(process.env.APP_DB_PORT ?? '5432', 10);
 
 const db = new Sequelize({
-  // @ts-ignore
   dialect: PostgresDialect,
   database: dbName,
   user: dbUser,
@@ -23,6 +22,12 @@ const db = new Sequelize({
   port: dbPort,
   ssl: false,
   clientMinMessages: 'notice',
+  pool: {
+    max: 3,
+    min: 1,
+    acquire: 30000,
+    idle: 10000,
+  },
 });
 
 export default db;

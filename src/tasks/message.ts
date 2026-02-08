@@ -1,6 +1,12 @@
 import utc from 'dayjs/plugin/utc.js';
 import dayjs from 'dayjs';
-import { Collection, Message, SeparatorBuilder, SeparatorSpacingSize, TextDisplayBuilder } from 'discord.js';
+import {
+  type Message,
+  type TextBasedChannel,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
+  TextDisplayBuilder,
+} from 'discord.js';
 import type { SapphireClient } from '@sapphire/framework';
 
 dayjs.extend(utc);
@@ -29,39 +35,35 @@ import {
 // Models
 import type { Objective } from '@/models/objective.model.js';
 
-export const deletePreviousMessage = async (client: SapphireClient, channelId: string) => {
-  const channel = client.channels.cache.get(channelId);
+interface ObjectiveIndex {
+  id: number;
+  index: number;
+}
 
-  if (channel) {
-    // @ts-ignore
-    let messages: Collection<Message> = await channel?.messages?.fetch({ limit: 10 });
+type MessageComponent = TextDisplayBuilder | SeparatorBuilder;
 
-    if (messages) {
-      messages = Array.from(messages);
-      messages = messages?.filter((item: (string | Message)[]) => {
-        const message = item?.[1];
+export const deletePreviousMessage = async (client: SapphireClient, channelId: string): Promise<void> => {
+  const channel = client.channels.cache.get(channelId) as TextBasedChannel | undefined;
 
-        if (message instanceof Message) {
-          return message?.author?.id === process.env.APP_CLIENT_ID;
-        }
+  if (channel && 'messages' in channel) {
+    const messages = await channel.messages.fetch({ limit: 10 });
+    const clientId = process.env.APP_CLIENT_ID;
 
-        return false;
-      });
+    const botMessages = messages.filter((message: Message) =>
+      message.author.id === clientId,
+    );
 
-      for (const item of messages) {
-        const message = item?.[1];
-
-        if (message instanceof Message && message.deletable) {
-          message.delete().catch(() => null);
-        }
+    for (const message of botMessages.values()) {
+      if (message.deletable) {
+        await message.delete().catch(() => null);
       }
     }
   }
-}
+};
 
-const displayObjective = (client: SapphireClient, data: Objective[]): any[] => {
-  const content: any[] = [];
-  const objectiveIndex: Record<string, number>[] = [];
+const displayObjective = (client: SapphireClient, data: Objective[]): MessageComponent[] => {
+  const content: MessageComponent[] = [];
+  const objectiveIndex: ObjectiveIndex[] = [];
 
   data.forEach((objective, index) => {
     objectiveIndex.push({
@@ -74,17 +76,16 @@ const displayObjective = (client: SapphireClient, data: Objective[]): any[] => {
     item.type === TYPE_NODE_FIBER ||
     item.type === TYPE_NODE_HIDE ||
     item.type === TYPE_NODE_ORE ||
-    item.type === TYPE_NODE_WOOD
+    item.type === TYPE_NODE_WOOD,
   );
   const objectiveCore = data.filter((item) => item.type === TYPE_CORE);
   const objectiveVortex = data.filter((item) => item.type === TYPE_VORTEX);
-  let globalIndex = 0;
 
-  [objectiveNode, objectiveCore, objectiveVortex].forEach((category, index) => {
+  [objectiveNode, objectiveCore, objectiveVortex].forEach((category, categoryIndex) => {
     if (category.length > 0) {
       let categoryName = '';
 
-      switch (index) {
+      switch (categoryIndex) {
         case 0:
           categoryName = '## Node ##';
           break;
@@ -97,14 +98,12 @@ const displayObjective = (client: SapphireClient, data: Objective[]): any[] => {
       }
 
       const textDisplayCategoryName = new TextDisplayBuilder()
-        .setContent(`${categoryName}`);
+        .setContent(categoryName);
 
       content.push(textDisplayCategoryName);
 
       category.forEach((item) => {
         let objectiveRarity = '';
-
-        globalIndex += 1;
 
         // Prefix with emoji
         switch (item.rarity) {
@@ -129,14 +128,14 @@ const displayObjective = (client: SapphireClient, data: Objective[]): any[] => {
             break;
         }
 
-        const itemData = objectiveIndex.find((o: Record<string, number>) => o.id === item.id);
+        const itemData = objectiveIndex.find((o) => o.id === item.id);
         const maintenance = item.maintenanceAdded ? ':white_check_mark:' : ':x:';
-        const user = client.users.cache.find((user) => user.id === item.userId);
+        const user = client.users.cache.find((u) => u.id === item.userId);
 
         const textDisplayList = new TextDisplayBuilder()
           .setContent(
-            `- #${itemData?.index} — ${objectiveRarity} —— **${dayjs(item.time).utc().format('HH:mm')}** UTC (<t:${dayjs(item.time).unix()}:R>) —— **${item.map}**
--# Maintenance added: ${maintenance} —— Objective added by ${user?.displayName}`
+            `- #${String(itemData?.index ?? 0)} — ${objectiveRarity} —— **${dayjs(item.time).utc().format('HH:mm')}** UTC (<t:${String(dayjs(item.time).unix())}:R>) —— **${item.map}**
+-# Maintenance added: ${maintenance} —— Objective added by ${user?.displayName ?? 'Unknown'}`,
           );
 
         content.push(textDisplayList);
@@ -149,29 +148,31 @@ const displayObjective = (client: SapphireClient, data: Objective[]): any[] => {
   });
 
   return content;
-}
+};
 
-const displayNoObjective = (): any[] => {
-  const content: any[] = [];
+const displayNoObjective = (): MessageComponent[] => {
+  const content: MessageComponent[] = [];
 
   const title = new TextDisplayBuilder().setContent('## Objective Timers ##');
+
   content.push(title);
 
   const message = new TextDisplayBuilder().setContent(
     `There is no active timer.
-Use command \`/add\` to create a new one!`
+Use command \`/add\` to create a new one!`,
   );
+
   content.push(message);
 
   return content;
-}
+};
 
-export const getMessage = (client: SapphireClient, type: String, data?: any): any[] => {
-  let content = [];
+export const getMessage = (client: SapphireClient, type: string, data?: Objective[]): MessageComponent[] => {
+  let content: MessageComponent[] = [];
 
   switch (type) {
     case 'objective':
-      content = displayObjective(client, data);
+      content = displayObjective(client, data ?? []);
       break;
     case 'empty':
       content = displayNoObjective();

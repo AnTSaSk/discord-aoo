@@ -1,10 +1,10 @@
 import { type Logger, pino } from 'pino';
 import { getSecret } from '../utils/secrets.js';
 
-let logger: Logger;
+let logger: Logger | undefined;
 
 export const getLogger = (): Logger => {
-  if (!logger) {
+  if (logger === undefined) {
     const isProduction = process.env.NODE_ENV === 'production';
     const useLogtail = process.env.APP_DEV_MODE === 'false';
 
@@ -20,7 +20,7 @@ export const getLogger = (): Logger => {
                 sourceToken: String(getSecret('APP_LOGTAIL_TOKEN')),
                 options: {
                   endpoint: String(getSecret('APP_LOGTAIL_ENDPOINT')),
-                }
+                },
               },
               level: 'info',
             },
@@ -43,10 +43,10 @@ export const getLogger = (): Logger => {
           target: 'pino-pretty',
           options: {
             colorize: true,
-            ignore: "pid,hostname",
-            translateTime: "dd-mm-yyyy hh:MM:ss TT",
+            ignore: 'pid,hostname',
+            translateTime: 'dd-mm-yyyy hh:MM:ss TT',
             levelFirst: true,
-            minimumLevel: "trace",
+            minimumLevel: 'trace',
           },
         },
       });

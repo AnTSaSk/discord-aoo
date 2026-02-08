@@ -3,6 +3,7 @@ import {
   ApplicationIntegrationType,
   InteractionContextType,
   MessageFlags,
+  type TextChannel,
 } from 'discord.js';
 
 // Config
@@ -15,7 +16,7 @@ import { deleteObjective, findObjectiveByGuildId } from '@/services/objective.se
 import { deletePreviousMessage, getMessage } from '@/tasks/message.js';
 
 export class ListObjectivesCommand extends Command {
-  public constructor(context: Command.LoaderContext, options: Command.Options) {
+  constructor(context: Command.LoaderContext, options: Command.Options) {
     super(context, {
       ...options,
       name: 'list',
@@ -24,29 +25,27 @@ export class ListObjectivesCommand extends Command {
     });
   }
 
-  public override registerApplicationCommands(registry: Command.Registry) {
+  public override registerApplicationCommands(registry: Command.Registry): void {
     const integrationTypes: ApplicationIntegrationType[] = [ApplicationIntegrationType.GuildInstall];
-    const contexts: InteractionContextType[] = [
-      InteractionContextType.Guild,
-    ];
+    const contexts: InteractionContextType[] = [InteractionContextType.Guild];
 
     registry.registerChatInputCommand((builder) =>
       builder
         .setName(this.name)
         .setDescription(this.description)
         .setIntegrationTypes(integrationTypes)
-        .setContexts(contexts)
+        .setContexts(contexts),
     );
   }
 
-  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+  public override async chatInputRun(interaction: Command.ChatInputCommandInteraction): Promise<void> {
     const logger = getLogger();
     const guildId = interaction.guildId;
     const channelId = interaction.channelId;
 
     if (!guildId || !channelId) {
       logger.error(`Command "getObjectives" - Missing some values:
-        - Guild ID: ${guildId}
+        - Guild ID: ${guildId ?? 'undefined'}
       `);
 
       await interaction.reply({
@@ -74,23 +73,21 @@ export class ListObjectivesCommand extends Command {
           for (const objective of oldObjectives) {
             try {
               await deleteObjective(objective.id);
-            } catch (e) {
-              logger.error(`Error during the delete of the objective: ${objective};
-                Error: ${e}`);
+            } catch (error) {
+              logger.error(`Error during the delete of objective ID ${String(objective.id)}: ${String(error)}`);
             }
           }
         }
 
         if (currentObjectives.length > 0 && channel) {
-          deletePreviousMessage(this.container.client, channel.id);
+          await deletePreviousMessage(this.container.client, channel.id);
 
           await interaction.reply({
             content: 'You can check the list of the objectives below!',
-            flags: MessageFlags.Ephemeral
+            flags: MessageFlags.Ephemeral,
           });
 
-          // @ts-ignore
-          await channel.send({
+          await (channel as TextChannel).send({
             components: getMessage(this.container.client, 'objective', currentObjectives),
             flags: MessageFlags.IsComponentsV2,
           });
@@ -100,15 +97,14 @@ export class ListObjectivesCommand extends Command {
       }
 
       if (channel) {
-        deletePreviousMessage(this.container.client, channel.id);
+        await deletePreviousMessage(this.container.client, channel.id);
 
         await interaction.reply({
           content: 'No objectives to display!',
-          flags: MessageFlags.Ephemeral
+          flags: MessageFlags.Ephemeral,
         });
 
-        // @ts-ignore
-        await channel.send({
+        await (channel as TextChannel).send({
           components: getMessage(this.container.client, 'empty'),
           flags: MessageFlags.IsComponentsV2,
         });
@@ -119,9 +115,7 @@ export class ListObjectivesCommand extends Command {
 
     await interaction.reply({
       content: 'No objectives to display',
-      flags: MessageFlags.Ephemeral
+      flags: MessageFlags.Ephemeral,
     });
-
-    return;
   }
 }

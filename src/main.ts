@@ -13,13 +13,13 @@ if (process.env.NODE_ENV !== 'production') {
   await import('dotenv/config');
 }
 
-type Bot = {
+interface Bot {
   client: SapphireClient;
-};
+}
 
 let bot: Bot | undefined;
 
-const main = async () => {
+const main = async (): Promise<void> => {
   const logger = getLogger();
   let client: SapphireClient;
   const db = database;
@@ -43,7 +43,7 @@ const main = async () => {
       await db.authenticate();
       logger.info('Connection has been established successfully');
     } catch (error) {
-      logger.error(`Unable to connect to the database: ${error}`);
+      logger.error(`Unable to connect to the database: ${String(error)}`);
       process.exit(1);
     }
 
@@ -53,23 +53,28 @@ const main = async () => {
   }
 
   // Graceful shutdown handlers
-  const shutdown = async (signal: string) => {
+  const shutdown = async (signal: string): Promise<void> => {
     logger.info(`Received ${signal}. Shutting down gracefully...`);
+
     try {
-      bot?.client.destroy();
+      await bot?.client.destroy();
       await db.close();
       logger.info('Shutdown complete');
       process.exit(0);
     } catch (error) {
-      logger.error(`Error during shutdown: ${error}`);
+      logger.error(`Error during shutdown: ${String(error)}`);
       process.exit(1);
     }
   };
 
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
-  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => {
+    void shutdown('SIGTERM');
+  });
+  process.on('SIGINT', () => {
+    void shutdown('SIGINT');
+  });
 
-  bot.client.login(token);
+  await bot.client.login(token);
 };
 
 void main();

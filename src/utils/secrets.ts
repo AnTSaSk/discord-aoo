@@ -15,7 +15,8 @@ export function getSecret(envVar: string): string | undefined {
     try {
       return readFileSync(process.env[fileVar], 'utf8').trim();
     } catch (error) {
-      console.error(`Failed to read secret from ${process.env[fileVar]}:`, (error as Error).message);
+      // eslint-disable-next-line no-console -- Logger not available at this level
+      console.error(`Failed to read secret from ${process.env[fileVar] ?? 'unknown'}:`, (error as Error).message);
     }
   }
 

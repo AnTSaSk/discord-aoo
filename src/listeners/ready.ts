@@ -12,24 +12,26 @@ import ObjectiveModel from '@/models/objective.model.js';
 import { cronTask } from '@/tasks/cron.js';
 
 export class ReadyListener extends Listener {
-  public constructor(context: Listener.LoaderContext, options: Listener.Options) {
+  constructor(context: Listener.LoaderContext, options: Listener.Options) {
     super(context, {
       ...options,
       once: true,
       event: 'ready',
-    })
+    });
   }
 
-  public override run(client: Client<true>) {
+  public override run(client: Client<true>): void {
     const logger = getLogger();
-    const { displayName } = client.user!;
+    const { displayName } = client.user;
 
     logger.info(`Logged in as ${displayName}`);
 
-    ObjectiveModel.sync();
+    void ObjectiveModel.sync().then(() => {
+      logger.info('All models were synchronized successfully');
+    });
 
-    logger.info(`All models were synchronized successfully`);
-
-    cron.schedule('*/30 * * * *', () => cronTask(logger, client));
+    cron.schedule('*/30 * * * *', () => {
+      void cronTask(logger, client);
+    });
   }
 }

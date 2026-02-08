@@ -1,4 +1,4 @@
-import { DataTypes, Model, type CreationOptional, type InferAttributes, type InferCreationAttributes } from '@sequelize/core';
+import { DataTypes, type Model, type CreationOptional, type InferAttributes, type InferCreationAttributes } from '@sequelize/core';
 
 // Config
 import database from '@/config/db.js';
@@ -15,7 +15,7 @@ export interface Objective extends Model<InferAttributes<Objective>, InferCreati
   maintenanceAdded: boolean;
   createdAt: CreationOptional<Date>;
   updatedAt: CreationOptional<Date>;
-};
+}
 
 export const ObjectiveModel = database.define<Objective>('Objective', {
   id: {
@@ -63,6 +63,14 @@ export const ObjectiveModel = database.define<Objective>('Objective', {
     type: DataTypes.DATE,
     allowNull: false,
   },
+}, {
+  // Indexes for query optimization
+  indexes: [
+    { fields: ['guildId'] },
+    { fields: ['time'] },
+    { fields: ['guildId', 'time'] },
+    { fields: ['guildId', 'channelId'] },
+  ],
 });
 
 export default ObjectiveModel;
