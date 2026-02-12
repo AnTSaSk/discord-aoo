@@ -3,11 +3,18 @@ import dayjs from 'dayjs';
 import {
   type Message,
   type TextBasedChannel,
+  DiscordAPIError,
   SeparatorBuilder,
   SeparatorSpacingSize,
   TextDisplayBuilder,
 } from 'discord.js';
 import type { SapphireClient } from '@sapphire/framework';
+
+// Config
+import { getLogger } from '@/config/logger.js';
+
+// Utils
+import { getRequiredSecret } from '@/utils/secrets.js';
 
 dayjs.extend(utc);
 
@@ -43,21 +50,108 @@ interface ObjectiveIndex {
 type MessageComponent = TextDisplayBuilder | SeparatorBuilder;
 
 export const deletePreviousMessage = async (client: SapphireClient, channelId: string): Promise<void> => {
-  const channel = client.channels.cache.get(channelId) as TextBasedChannel | undefined;
+  const logger = getLogger();
+  let deletedCount = 0;
+  let failedCount = 0;
 
-  if (channel && 'messages' in channel) {
+  try {
+    // Phase 3: Try cache first, fetch from API if not cached
+    let channel = client.channels.cache.get(channelId) as TextBasedChannel | undefined;
+
+    if (!channel) {
+      logger.info({ channelId }, 'Channel not in cache, fetching from API');
+
+      const fetchedChannel = await client.channels.fetch(channelId);
+      channel = fetchedChannel as TextBasedChannel | undefined;
+    }
+
+    if (!channel || !('messages' in channel)) {
+      logger.warn({ channelId }, 'Channel not found or is not text-based');
+
+      return;
+    }
+
+    // Fetch recent messages
     const messages = await channel.messages.fetch({ limit: 10 });
-    const clientId = process.env.APP_CLIENT_ID;
+
+    const clientId = getRequiredSecret('APP_CLIENT_ID', 'Discord client ID');
 
     const botMessages = messages.filter((message: Message) =>
       message.author.id === clientId,
     );
 
+    logger.info({
+      channelId,
+      totalMessages: messages.size,
+      botMessages: botMessages.size,
+    }, 'Fetched messages for deletion');
+
     for (const message of botMessages.values()) {
-      if (message.deletable) {
-        await message.delete().catch(() => null);
+      if (!message.deletable) {
+        logger.info(
+          { messageId: message.id, channelId },
+          'Message not deletable, skipping',
+        );
+        continue;
+      }
+
+      try {
+        await message.delete();
+
+        deletedCount++;
+
+        logger.info(
+          { messageId: message.id, channelId },
+          'Successfully deleted bot message',
+        );
+      } catch (error) {
+        failedCount++;
+
+        // Discriminate error types for better logging
+        if (error instanceof DiscordAPIError) {
+          switch (error.code) {
+            case 10008:
+              // Unknown Message - already deleted (not really an error)
+              logger.info(
+                { messageId: message.id, channelId, code: error.code },
+                'Message already deleted',
+              );
+              break;
+
+            case 50013:
+            case 50001:
+              // Missing Permissions / Missing Access
+              logger.error(
+                { messageId: message.id, channelId, code: error.code },
+                'Missing permissions to delete message',
+              );
+              break;
+
+            default:
+              logger.warn(
+                { error, messageId: message.id, channelId, code: error.code },
+                'Discord API error during deletion',
+              );
+              break;
+          }
+        } else {
+          logger.error(
+            { error, messageId: message.id, channelId },
+            'Unexpected error during message deletion',
+          );
+        }
       }
     }
+
+    logger.info(
+      { channelId, deletedCount, failedCount },
+      'Completed message deletion',
+    );
+  } catch (error) {
+    logger.error(
+      { error, channelId },
+      'Failed to delete previous messages in channel',
+    );
   }
 };
 
