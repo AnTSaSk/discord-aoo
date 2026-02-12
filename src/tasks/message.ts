@@ -100,7 +100,7 @@ export const deletePreviousMessage = async (client: SapphireClient, channelId: s
 
         deletedCount++;
 
-        logger.info(
+        logger.debug(
           { messageId: message.id, channelId },
           'Successfully deleted bot message',
         );

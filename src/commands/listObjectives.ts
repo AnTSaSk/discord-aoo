@@ -44,9 +44,11 @@ export class ListObjectivesCommand extends Command {
     const channelId = interaction.channelId;
 
     if (!guildId || !channelId) {
-      logger.error(`Command "getObjectives" - Missing some values:
-        - Guild ID: ${guildId ?? 'undefined'}
-      `);
+      logger.error({
+        command: 'list',
+        guildId: guildId ?? undefined,
+        channelId: channelId ?? undefined,
+      }, 'Command missing required values');
 
       await interaction.reply({
         content: 'Something went wrong, please try again.',
@@ -71,11 +73,7 @@ export class ListObjectivesCommand extends Command {
         if (oldObjectives.length > 0) {
           // Delete objectives
           for (const objective of oldObjectives) {
-            try {
-              await deleteObjective(objective.id);
-            } catch (error) {
-              logger.error(`Error during the delete of objective ID ${String(objective.id)}: ${String(error)}`);
-            }
+            await deleteObjective(objective.id);
           }
         }
 
@@ -86,6 +84,12 @@ export class ListObjectivesCommand extends Command {
             content: 'You can check the list of the objectives below!',
             flags: MessageFlags.Ephemeral,
           });
+
+          logger.info({
+            guildId,
+            userId: interaction.user.id,
+            objectivesCount: currentObjectives.length,
+          }, 'List command executed successfully');
 
           await (channel as TextChannel).send({
             components: getMessage(this.container.client, 'objective', currentObjectives),
@@ -103,6 +107,11 @@ export class ListObjectivesCommand extends Command {
           content: 'No objectives to display!',
           flags: MessageFlags.Ephemeral,
         });
+
+        logger.info({
+          guildId,
+          userId: interaction.user.id,
+        }, 'List command executed - no objectives');
 
         await (channel as TextChannel).send({
           components: getMessage(this.container.client, 'empty'),

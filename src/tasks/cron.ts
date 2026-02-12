@@ -18,71 +18,100 @@ interface GuildData {
 }
 
 export const cronTask = async (logger: Logger, client: Client<true>): Promise<void> => {
-  logger.info('-- CRON --');
+  const startTime = Date.now();
   const now = dayjs().utc();
 
-  logger.info('CRON - Get all past objectives');
-  const objectives = await findAllObjective({
-    order: [['time', 'ASC']],
-    where: {
-      time: {
-        [Op.lte]: now.toDate(),
-      },
-    },
-  });
-  const guildData: GuildData[] = [];
+  logger.debug('Cron task started');
 
-  // NO PAST OBJECTIVE
-  if (objectives.length <= 0) {
-    logger.info('CRON - No past objective');
-  } else {
-    logger.info('CRON - Delete old objective(s)');
+  try {
+    logger.debug('Fetching past objectives');
 
-    // Delete objectives
-    for (const objective of objectives) {
-      try {
-        await deleteObjective(objective.id);
+    const objectives = await findAllObjective({
+      order: [['time', 'ASC']],
+      where: { time: { [Op.lte]: now.toDate() } },
+    });
 
-        if (!guildData.some((item) => item.guildId === objective.guildId)) {
-          guildData.push({
-            guildId: objective.guildId,
-            channelId: objective.channelId,
-          });
-        }
-      } catch (error) {
-        logger.error(`Error during the delete of objective ID ${String(objective.id)}: ${String(error)}`);
-      }
-    }
-  }
+    const guildData: GuildData[] = [];
+    let deletedCount = 0;
+    let errorCount = 0;
 
-  // For all guilds that have an updated list, send a new message
-  if (guildData.length >= 0) {
-    logger.info('CRON - Loop on each Guild data with an updated list');
+    // NO PAST OBJECTIVE
+    if (objectives.length <= 0) {
+      logger.debug('No past objectives to process');
+    } else {
+      logger.debug({ count: objectives.length }, 'Processing past objectives');
 
-    for (const data of guildData) {
-      const channel = client.channels.cache.get(data.channelId);
+      // Delete objectives
+      for (const objective of objectives) {
+        try {
+          await deleteObjective(objective.id);
+          deletedCount++;
 
-      if (channel) {
-        const guildObjectives = await findObjectiveByGuildId(data.guildId);
-
-        await deletePreviousMessage(client, channel.id);
-
-        logger.info(`CRON - Send new message on Guild: ${data.guildId} on the channel: ${data.channelId}`);
-
-        if (guildObjectives.length > 0) {
-          await (channel as TextChannel).send({
-            components: getMessage(client, 'objective', guildObjectives),
-            flags: MessageFlags.IsComponentsV2,
-          });
-        } else {
-          await (channel as TextChannel).send({
-            components: getMessage(client, 'empty'),
-            flags: MessageFlags.IsComponentsV2,
-          });
+          if (!guildData.some((item) => item.guildId === objective.guildId)) {
+            guildData.push({
+              guildId: objective.guildId,
+              channelId: objective.channelId,
+            });
+          }
+        } catch (error) {
+          errorCount++;
+          logger.error({ error, objectiveId: objective.id }, 'Failed to delete objective');
         }
       }
     }
-  }
 
-  logger.info('-- END CRON --');
+    // For all guilds that have an updated list, send a new message
+    let messagesUpdated = 0;
+
+    // FIX BUG: > 0 instead of >= 0
+    if (guildData.length > 0) {
+      logger.debug({ guildCount: guildData.length }, 'Updating guild messages');
+
+      for (const data of guildData) {
+        const channel = client.channels.cache.get(data.channelId);
+
+        if (channel) {
+          const guildObjectives = await findObjectiveByGuildId(data.guildId);
+          await deletePreviousMessage(client, channel.id);
+
+          logger.debug({
+            guildId: data.guildId,
+            channelId: data.channelId,
+            objectivesCount: guildObjectives.length,
+          }, 'Sending updated message to guild');
+
+          if (guildObjectives.length > 0) {
+            await (channel as TextChannel).send({
+              components: getMessage(client, 'objective', guildObjectives),
+              flags: MessageFlags.IsComponentsV2,
+            });
+          } else {
+            await (channel as TextChannel).send({
+              components: getMessage(client, 'empty'),
+              flags: MessageFlags.IsComponentsV2,
+            });
+          }
+
+          messagesUpdated++;
+        }
+      }
+    }
+
+    const duration = Date.now() - startTime;
+
+    // Single summary log
+    if (deletedCount > 0 || errorCount > 0 || messagesUpdated > 0) {
+      logger.info({
+        deletedObjectives: deletedCount,
+        errors: errorCount,
+        guildsUpdated: guildData.length,
+        messagesUpdated,
+        duration,
+      }, 'Cron task completed with changes');
+    } else {
+      logger.debug({ duration }, 'Cron task completed - no changes');
+    }
+  } catch (error) {
+    logger.error({ error }, 'Cron task failed');
+  }
 };

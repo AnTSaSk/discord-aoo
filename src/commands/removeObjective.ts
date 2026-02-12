@@ -52,10 +52,11 @@ export class RemoveObjectiveCommand extends Command {
     const objectiveIndex = interaction.options.getString('index')?.replace(/\D/g, '');
 
     if (!guildId || !objectiveIndex) {
-      logger.error(`Command 'removeObjectives' - Missing some values:
-        - Guild ID: ${guildId ?? 'undefined'}
-        - Objective index: ${objectiveIndex ?? 'undefined'}
-      `);
+      logger.error({
+        command: 'remove',
+        guildId: guildId ?? undefined,
+        objectiveIndex: objectiveIndex ?? undefined,
+      }, 'Command missing required values');
 
       await interaction.reply({
         content: 'Something went wrong, please try again.',
@@ -118,6 +119,15 @@ export class RemoveObjectiveCommand extends Command {
             content: 'The objective has been removed successfully',
             flags: MessageFlags.Ephemeral,
           });
+
+          logger.info({
+            guildId,
+            userId: interaction.user.id,
+            objectiveId: objective.id,
+            objectiveType: objective.type,
+            objectiveMap: objective.map,
+            removedByOwner: interaction.user.id === objective.userId,
+          }, 'Objective removed successfully');
 
           const remainingObjectives = objectives.filter((o) => o.id !== objective.id);
 

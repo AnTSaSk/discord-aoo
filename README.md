@@ -111,6 +111,7 @@ pnpm run start    # Run compiled app in production mode
 | `APP_LOGTAIL_TOKEN` | No | Logtail token for production logging | — |
 | `APP_LOGTAIL_ENDPOINT` | No | Logtail endpoint URL | — |
 | `APP_DEV_MODE` | No | Enable pretty-printed logs | `false` |
+| `APP_LOG_LEVEL` | No | Log level: `trace`, `debug`, `info`, `warn`, `error`, `fatal` | `debug` in dev, `info` in prod |
 
 > Docker secrets are supported via the `_FILE` suffix (e.g. `APP_BOT_TOKEN_FILE=/run/secrets/token`).
 

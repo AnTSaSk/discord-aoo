@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import { Command } from '@sapphire/framework';
 import {
   ApplicationIntegrationType,
@@ -187,15 +186,16 @@ export class AddObjectiveCommand extends Command {
     const objectiveTime = interaction.options.getString('time');
 
     if (!guildId || !channelId || !userId || !objectiveType || !objectiveRarity || !objectiveMap || !objectiveTime) {
-      logger.error(`Command "addObjective" - Missing some values:
-        - Guild ID: ${guildId ?? 'undefined'}
-        - Channel ID: ${channelId}
-        - User ID: ${userId}
-        - Type: ${objectiveType ?? 'undefined'}
-        - Rarity: ${objectiveRarity ?? 'undefined'}
-        - Map: ${objectiveMap ?? 'undefined'}
-        - Time: ${objectiveTime ?? 'undefined'}
-      `);
+      logger.error({
+        command: 'addObjective',
+        guildId: guildId ?? undefined,
+        channelId,
+        userId,
+        type: objectiveType ?? undefined,
+        rarity: objectiveRarity ?? undefined,
+        map: objectiveMap ?? undefined,
+        time: objectiveTime ?? undefined,
+      }, 'Command missing required values');
 
       await interaction.reply({
         content: `Something went wrong, please try again.
@@ -213,12 +213,13 @@ If the problem persist, please contact the Bot Developer.`,
       !MAPS.includes(objectiveMap) ||
       !(/^\d{1,2}:\d{1,2}$/m).test(objectiveTime)
     ) {
-      logger.error(`Command "addObjective" - Incorrect value(s):
-        - Type: ${objectiveType}
-        - Rarity: ${objectiveRarity}
-        - Map: ${objectiveMap}
-        - Time: ${objectiveTime}
-      `);
+      logger.error({
+        command: 'addObjective',
+        type: objectiveType,
+        rarity: objectiveRarity,
+        map: objectiveMap,
+        time: objectiveTime,
+      }, 'Command received incorrect values');
 
       await interaction.reply({
         content: `One or multiple value(s) are incorrect, please try again.
@@ -261,12 +262,13 @@ If the problem persist, please contact the Bot Developer.`,
       });
 
       if (identicalObjectives.length > 0) {
-        logger.info(`Objective already exist -
-          GuildID: ${guildId},
-          Type: ${objectiveType},
-          Rarity: ${objectiveRarity},
-          Map: ${objectiveMap},
-          Time: ${objectiveTime}`);
+        logger.info({
+          guildId,
+          type: objectiveType,
+          rarity: objectiveRarity,
+          map: objectiveMap,
+          time: objectiveTime,
+        }, 'Objective already exists');
 
         await interaction.reply({
           content: 'It appears that the objective you are trying to add already exists',
@@ -276,7 +278,7 @@ If the problem persist, please contact the Bot Developer.`,
         return;
       }
 
-      const newObjective = await createObjective({
+      await createObjective({
         guildId,
         channelId,
         userId,
@@ -286,8 +288,6 @@ If the problem persist, please contact the Bot Developer.`,
         time: time.toDate(),
         maintenanceAdded: maintenance,
       });
-
-      logger.info(`New objective (type: ${newObjective.type}, rarity: ${newObjective.rarity}, map: ${newObjective.map}, time: ${dayjs(newObjective.time).utc().format('DD/MM HH:mm')}) has been created in Discord ${guildId}`);
 
       await interaction.reply({
         content: `Your objective (${objectiveType}) has been successfully added!
@@ -306,11 +306,7 @@ It will be available at ${time.format('HH:mm')} UTC (<t:${String(time.unix())}:R
         if (oldObjectives.length > 0) {
           // Delete objectives
           for (const objective of oldObjectives) {
-            try {
-              await deleteObjective(objective.id);
-            } catch (error) {
-              logger.error(`Error during the delete of objective ID ${String(objective.id)}: ${String(error)}`);
-            }
+            await deleteObjective(objective.id);
           }
         }
 
