@@ -15,7 +15,7 @@
   "type": "module",
   "scripts": {
     "sync-db": "node dist/scripts/sync-db.js",
-    "build": "tsc && tsc-alias",
+    "build": "rm -rf dist && tsc && tsc-alias",
     "dev": "pnpm run build && node --env-file=.env.dev dist/src/main.js",
     "start": "node dist/src/main.js"
   },

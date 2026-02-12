@@ -16,7 +16,7 @@ export class ReadyListener extends Listener {
     super(context, {
       ...options,
       once: true,
-      event: 'ready',
+      event: 'clientReady',
     });
   }
 
@@ -28,6 +28,8 @@ export class ReadyListener extends Listener {
 
     void ObjectiveModel.sync().then(() => {
       logger.info('All models were synchronized successfully');
+    }).catch((error: unknown) => {
+      logger.error(error, 'Failed to synchronize models');
     });
 
     cron.schedule('*/30 * * * *', () => {
