@@ -54,7 +54,7 @@ export const MAP_EVERWINTER_INCLINE = 'Everwinter Incline';
 export const MAP_EVERWINTER_PEAK = 'Everwinter Peak';
 export const MAP_EVERWINTER_PASSAGE = 'Everwinter Passage';
 export const MAP_EVERWINTER_PLAIN = 'Everwinter Plain';
-export const MAP_EVERWINTER_REACH = 'EVERWINTER_REACH';
+export const MAP_EVERWINTER_REACH = 'Everwinter Reach';
 export const MAP_EVERWINTER_SHORES = 'Everwinter Shores';
 export const MAP_EYE_OF_THE_FOREST = 'Eye of the Forest';
 export const MAP_FARSHORE_BAY = 'Farshore Bay';
@@ -138,9 +138,9 @@ export const MAP_MUNTEN_FELL = 'Munten Fell';
 export const MAP_MUNTEN_RISE = 'Munten Rise';
 export const MAP_MUNTEN_TUNDRA = 'Munten Tundra';
 export const MAP_MURDERGULCH_CROSS = 'Murdergulch Cross';
-export const MAP_MURDERGULCH_DIVIDE = 'Mudergulch Divide';
+export const MAP_MURDERGULCH_DIVIDE = 'Murdergulch Divide';
 export const MAP_MURDERGULCH_GAP = 'Murdergulch Gap';
-export const MAP_MURDERGULCH_RAVINE = 'Mudergulch Ravine';
+export const MAP_MURDERGULCH_RAVINE = 'Murdergulch Ravine';
 export const MAP_MURDERGULCH_TRAIL = 'Murdergulch Trail';
 export const MAP_NORTHSTRAND_BEACH = 'Northstrand Beach';
 export const MAP_NORTHSTRAND_DUNES = 'Northstrand Dunes';
@@ -161,7 +161,7 @@ export const MAP_RIVERCOPSE_FOUNT = 'Rivercopse Fount';
 export const MAP_RIVERCOPSE_PATH = 'Rivercopse Path';
 export const MAP_RUNNELVEIN_BOG = 'Runnelvein Bog';
 export const MAP_RUNNELVEIN_SINK = 'Runnelvein Sink';
-export const MAP_RUNNELVEIN_SLOUGH = 'Runelvein Slough';
+export const MAP_RUNNELVEIN_SLOUGH = 'Runnelvein Slough';
 export const MAP_SANDMOUNT_ASCENT = 'Sandmount Ascent';
 export const MAP_SANDMOUNT_DESERT = 'Sandmount Desert';
 export const MAP_SANDMOUNT_ESKER = 'Sandmount Esker';
@@ -181,7 +181,7 @@ export const MAP_SHALEHEATH_STEEP = 'Shaleheath Steep';
 export const MAP_SKULLMARSH_LOWER = 'Skullmarsh Lower';
 export const MAP_SKULLMARSH_UPPER = 'Skullmarsh Upper';
 export const MAP_SKYLAKE_BRIDGE = 'Skylake Bridge';
-export const MAP_SKYLAKE_HINTERLANDS = 'Skylade Hinterlands';
+export const MAP_SKYLAKE_HINTERLANDS = 'Skylake Hinterlands';
 export const MAP_SKYSAND_PLATEAU = 'Skysand Plateau';
 export const MAP_SKYSAND_RIDGE = 'Skysand Ridge';
 export const MAP_SLAKESANDS_CANYON = 'Slakesands Canyon';
@@ -217,11 +217,12 @@ export const MAP_THIRSTWATER_WASTE = 'Thirstwater Waste';
 export const MAP_THUNDERROCK_ASCENT = 'Thunderrock Ascent';
 export const MAP_THUNDERROCK_DRAW = 'Thunderrock Draw';
 export const MAP_THUNDERROCK_RAPIDS = 'Thunderrock Rapids';
+export const MAP_THUNDERROCK_UPLAND = 'Thunderrock Upland';
 export const MAP_TIMBERSCAR_COPSE = 'Timberscar Copse';
 export const MAP_TIMBERSCAR_DELL = 'Timberscar Dell';
 export const MAP_TIMBERSLOPE_DELL = 'Timberslope Dell';
-export const MAP_TIMBERSLOPE_GROVE = 'Timbertop Grove';
-export const MAP_TIMBERTOP_BRIDGE = 'Timbertop Bridge';
+export const MAP_TIMBERSLOPE_GROVE = 'Timberslope Grove';
+export const MAP_TIMBERSLOPE_BRIDGE = 'Timberslope Bridge';
 export const MAP_TIMBERTOP_DALE = 'Timbertop Dale';
 export const MAP_TIMBERTOP_ESCARP = 'Timbertop Escarp';
 export const MAP_TIMBERTOP_WOOD = 'Timbertop Wood';
@@ -235,6 +236,7 @@ export const MAP_WATCHWOOD_PRECIPICE = 'Watchwood Precipice';
 export const MAP_WESTWEALD_SHORE = 'Westweald Shore';
 export const MAP_WESTWEALD_THICKET = 'Westweald Thicket';
 export const MAP_WETGRAVE_BOG = 'Wetgrave Bog';
+export const MAP_WETGRAVE_MARSH = 'Wetgrave Marsh';
 export const MAP_WETGRAVE_SWALE = 'Wetgrave Swale';
 export const MAP_WHITEBANK_CROSS = 'Whitebank Cross';
 export const MAP_WHITEBANK_DESCENT = 'Whitebank Descent';
@@ -263,11 +265,12 @@ export const MAP_WILLOWSHADE_HILLS = 'Willowshade Hills';
 export const MAP_WILLOWSHADE_LAKE = 'Willowshade Lake';
 export const MAP_WILLOWSHADE_MIRE = 'Willowshade Mire';
 export const MAP_WILLOWSHADE_POOLS = 'Willowshade Pools';
-export const MAP_WILLOWSHADE_SINK = 'Willoshade Sink';
+export const MAP_WILLOWSHADE_SINK = 'Willowshade Sink';
 export const MAP_WILLOWSHADE_WETLANDS = 'Willowshade Wetlands';
 export const MAP_WINDGRASS_BORDER = 'Windgrass Border';
 export const MAP_WINDGRASS_COAST = 'Windgrass Coast';
 export const MAP_WINDGRASS_FIELDS = 'Windgrass Fields';
+export const MAP_WINDGRASS_GULLY = 'Windgrass Gully';
 export const MAP_WINDGRASS_PRECIPICE = 'Windgrass Precipice';
 export const MAP_WINDGRASS_RILL = 'Windgrass Rill';
 export const MAP_WINDGRASS_TERRACE = 'Windgrass Terrace';
@@ -501,11 +504,12 @@ export const MAPS = [
   MAP_THUNDERROCK_ASCENT,
   MAP_THUNDERROCK_DRAW,
   MAP_THUNDERROCK_RAPIDS,
+  MAP_THUNDERROCK_UPLAND,
   MAP_TIMBERSCAR_COPSE,
   MAP_TIMBERSCAR_DELL,
   MAP_TIMBERSLOPE_DELL,
+  MAP_TIMBERSLOPE_BRIDGE,
   MAP_TIMBERSLOPE_GROVE,
-  MAP_TIMBERTOP_BRIDGE,
   MAP_TIMBERTOP_DALE,
   MAP_TIMBERTOP_ESCARP,
   MAP_TIMBERTOP_WOOD,
@@ -519,6 +523,7 @@ export const MAPS = [
   MAP_WESTWEALD_SHORE,
   MAP_WESTWEALD_THICKET,
   MAP_WETGRAVE_BOG,
+  MAP_WETGRAVE_MARSH,
   MAP_WETGRAVE_SWALE,
   MAP_WHITEBANK_CROSS,
   MAP_WHITEBANK_DESCENT,
@@ -552,6 +557,7 @@ export const MAPS = [
   MAP_WINDGRASS_BORDER,
   MAP_WINDGRASS_COAST,
   MAP_WINDGRASS_FIELDS,
+  MAP_WINDGRASS_GULLY,
   MAP_WINDGRASS_PRECIPICE,
   MAP_WINDGRASS_RILL,
   MAP_WINDGRASS_TERRACE,
