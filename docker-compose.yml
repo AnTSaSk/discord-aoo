@@ -59,9 +59,11 @@ services:
     tmpfs:
       - /tmp:mode=1777,size=64m
     healthcheck:
-      test: ["CMD", "node", "-e", "process.exit(0)"]
+      # SEC-015: Liveness file check — verifies bot is connected to Discord
+      # (heartbeat writes timestamp every 15s, stale after 60s = unhealthy)
+      test: ["CMD-SHELL", "test -f /tmp/.bot-healthy && test $$(( $$(date +%s) - $$(cat /tmp/.bot-healthy | cut -c1-10) )) -lt 60"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
       start_period: 30s
 

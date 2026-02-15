@@ -23,7 +23,8 @@ const db = new Sequelize({
   password: dbPassword,
   host: dbHost,
   port: dbPort,
-  ssl: false,
+  // SEC-004: SSL enabled in production (self-signed cert on internal Docker network)
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   clientMinMessages: 'notice',
   keepAlive: true,
   keepAliveInitialDelayMillis: 20000,

@@ -7,6 +7,7 @@ import {
 import database from '@/config/db.js';
 import { getLogger } from '@/config/logger.js';
 import { getRequiredSecret } from '@/utils/secrets.js';
+import { startHeartbeat, stopHeartbeat } from '@/utils/liveness.js';
 
 // Load dotenv only in development
 if (process.env.NODE_ENV !== 'production') {
@@ -55,6 +56,7 @@ const main = async (): Promise<void> => {
   // Graceful shutdown handlers
   const shutdown = async (signal: string): Promise<void> => {
     logger.info(`Received ${signal}. Shutting down gracefully...`);
+    stopHeartbeat();
 
     try {
       await bot?.client.destroy();
@@ -75,6 +77,9 @@ const main = async (): Promise<void> => {
   });
 
   await bot.client.login(token);
+
+  // SEC-015: Start liveness heartbeat after successful Discord login
+  startHeartbeat();
 };
 
 void main();
