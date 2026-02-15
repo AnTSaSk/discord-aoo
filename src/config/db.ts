@@ -25,11 +25,15 @@ const db = new Sequelize({
   port: dbPort,
   ssl: false,
   clientMinMessages: 'notice',
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 20000,
+  connectionTimeoutMillis: 5000,
   pool: {
     max: 3,
     min: 1,
     acquire: 30000,
     idle: 10000,
+    evict: 1000,
   },
   logging: (sql: string, timing?: number) => {
     // Log slow queries only (>1000ms)
@@ -48,6 +52,9 @@ logger.info({
   database: dbName,
   poolMax: 3,
   poolMin: 1,
+  poolEvict: 1000,
+  keepAlive: true,
+  connectionTimeoutMillis: 5000,
 }, 'Database configuration initialized');
 
 export default db;
