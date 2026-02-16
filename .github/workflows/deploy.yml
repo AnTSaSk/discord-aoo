@@ -133,7 +133,52 @@ jobs:
           username: deploy
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: IMAGE_TAG,BOT_NAME,GITHUB_REPOSITORY
+          script_stop: true
           script: |
+            # Pre-flight checks
+            echo "=== Pre-flight checks ==="
+
+            # Verify environment variables
+            for VAR in BOT_NAME IMAGE_TAG GITHUB_REPOSITORY; do
+              if [ -z "$(eval echo \$$VAR)" ]; then
+                echo "ERROR: $VAR is not set"
+                exit 1
+              fi
+            done
+            echo "Environment variables: OK"
+
+            # Verify compose file exists
+            COMPOSE_FILE="/opt/stacks/${BOT_NAME}/docker-compose.yml"
+            if [ ! -f "$COMPOSE_FILE" ]; then
+              echo "ERROR: Compose file not found at $COMPOSE_FILE"
+              exit 1
+            fi
+            echo "Compose file: OK"
+
+            # Verify external Docker secrets
+            MISSING_SECRETS=""
+            for SECRET in discord_bot_aoo_token discord_bot_aoo_client_id discord_bot_aoo_db_name discord_bot_aoo_db_user discord_bot_aoo_db_password discord_bot_aoo_logtail_token discord_bot_aoo_logtail_endpoint; do
+              if ! docker secret inspect "$SECRET" > /dev/null 2>&1; then
+                MISSING_SECRETS="$MISSING_SECRETS $SECRET"
+              fi
+            done
+            if [ -n "$MISSING_SECRETS" ]; then
+              echo "ERROR: Missing Docker secrets:$MISSING_SECRETS"
+              exit 1
+            fi
+            echo "Docker secrets: OK"
+
+            # Verify external Docker networks
+            for NETWORK in internal egress; do
+              if ! docker network inspect "$NETWORK" > /dev/null 2>&1; then
+                echo "ERROR: Missing Docker network: $NETWORK"
+                exit 1
+              fi
+            done
+            echo "Docker networks: OK"
+
+            echo "=== Deploying ==="
+
             # Convert repository name to lowercase (Docker requirement)
             IMAGE_NAME="${GITHUB_REPOSITORY,,}"
 
@@ -147,14 +192,14 @@ jobs:
             # Deploy the stack (stop-first to avoid duplicate bot instances)
             docker stack deploy \
               --with-registry-auth \
-              -c "/opt/stacks/${BOT_NAME}/docker-compose.yml" \
+              -c "$COMPOSE_FILE" \
               "${BOT_NAME}"
 
             # Wait for deployment
             sleep 15
 
             # Verify deployment
-            docker service ls --filter "name=${BOT_NAME}"
+            docker service ls --filter "name=${BOT_NAME}_bot"
 
       - name: Verify bot is running
         uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262  # v1.0.3
@@ -165,23 +210,41 @@ jobs:
           username: deploy
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: BOT_NAME
+          script_stop: true
           script: |
-            # Check service is running
-            for i in {1..20}; do
-              REPLICAS=$(docker service ls --filter "name=${BOT_NAME}" --format "{{.Replicas}}")
-              if [[ "$REPLICAS" == "1/1" ]]; then
+            SERVICE_NAME="${BOT_NAME}_bot"
+
+            # Check service exists
+            if ! docker service inspect "$SERVICE_NAME" > /dev/null 2>&1; then
+              echo "ERROR: Service $SERVICE_NAME does not exist"
+              echo "=== Stack services ==="
+              docker stack services "${BOT_NAME}" 2>&1 || true
+              exit 1
+            fi
+
+            # Wait for service to be ready
+            for i in $(seq 1 20); do
+              REPLICAS=$(docker service ls --filter "name=${SERVICE_NAME}" --format "{{.Replicas}}")
+              if [ "$REPLICAS" = "1/1" ]; then
                 echo "Bot deployed successfully: $REPLICAS"
 
                 # Check recent logs for startup confirmation
                 echo "=== Recent logs ==="
-                docker service logs --tail 30 "${BOT_NAME}_bot" 2>&1 | grep -E "(ready|Started|Logged|Connection has been established|error)" | tail -10 || true
+                docker service logs --tail 30 "$SERVICE_NAME" 2>&1 | grep -E "(ready|Started|Logged|Connection has been established|error)" | tail -10 || true
                 exit 0
               fi
-              echo "Waiting for bot to start... ($REPLICAS)"
+              echo "Waiting for bot to start... ($REPLICAS) [attempt $i/20]"
               sleep 5
             done
-            echo "Deployment timeout"
-            docker service logs --tail 50 "${BOT_NAME}_bot" 2>&1 || true
+
+            # Deployment timeout — show diagnostics
+            echo "=== Deployment timeout ==="
+            echo "--- Service status ---"
+            docker service ls --filter "name=${SERVICE_NAME}"
+            echo "--- Task status ---"
+            docker service ps --no-trunc "$SERVICE_NAME" 2>&1 || true
+            echo "--- Recent logs ---"
+            docker service logs --tail 50 "$SERVICE_NAME" 2>&1 || true
             exit 1
 
       - name: Rollback on failure
@@ -194,6 +257,7 @@ jobs:
           username: deploy
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: BOT_NAME
+          script_stop: true
           script: |
             echo "Rolling back deployment..."
             docker service rollback "${BOT_NAME}_bot" || true
