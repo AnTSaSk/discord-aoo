@@ -59,8 +59,13 @@ services:
     # to read it via the g::rx default ACL on the containers directory
     user: "1001:0"
     read_only: true
-    tmpfs:
-      - /tmp:mode=1777,size=64m
+    volumes:
+      # NOTE: service-level 'tmpfs:' key is silently ignored by 'docker stack deploy'.
+      # Use 'type: tmpfs' in volumes instead (maps to --mount type=tmpfs).
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 67108864    # 64MB
     healthcheck:
       # SEC-015: Liveness file check — verifies bot is connected to Discord
       # (heartbeat writes timestamp every 15s, stale after 60s = unhealthy)
