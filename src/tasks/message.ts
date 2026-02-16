@@ -62,6 +62,7 @@ export const deletePreviousMessage = async (client: SapphireClient, channelId: s
       logger.info({ channelId }, 'Channel not in cache, fetching from API');
 
       const fetchedChannel = await client.channels.fetch(channelId);
+
       channel = fetchedChannel as TextBasedChannel | undefined;
     }
 

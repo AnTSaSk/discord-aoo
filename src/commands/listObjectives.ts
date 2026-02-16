@@ -47,7 +47,7 @@ export class ListObjectivesCommand extends Command {
       logger.error({
         command: 'list',
         guildId: guildId ?? undefined,
-        channelId: channelId ?? undefined,
+        channelId,
       }, 'Command missing required values');
 
       await interaction.reply({

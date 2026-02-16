@@ -45,5 +45,6 @@ export function stopHeartbeat(): void {
     clearInterval(heartbeatTimer);
     heartbeatTimer = undefined;
   }
+
   markUnhealthy();
 }

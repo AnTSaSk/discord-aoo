@@ -72,6 +72,7 @@ export const cronTask = async (logger: Logger, client: Client<true>): Promise<vo
 
         if (channel) {
           const guildObjectives = await findObjectiveByGuildId(data.guildId);
+
           await deletePreviousMessage(client, channel.id);
 
           logger.debug({

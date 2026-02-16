@@ -38,7 +38,7 @@ const db = new Sequelize({
   },
   logging: (sql: string, timing?: number) => {
     // Log slow queries only (>1000ms)
-    if (timing && timing > 1000) {
+    if (timing !== undefined && timing > 1000) {
       logger.warn({ sql, timing }, 'Slow database query detected');
     } else {
       logger.debug({ sql, timing }, 'Query executed');
