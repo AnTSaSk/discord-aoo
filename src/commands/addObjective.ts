@@ -19,7 +19,7 @@ import { TYPE_CORE, TYPE_NODE_FIBER, TYPE_NODE_HIDE, TYPE_NODE_ORE, TYPE_NODE_WO
 // Services
 import {
   createObjective,
-  deleteObjective,
+  deleteObjectivesByIds,
   findAllObjective,
   findObjectiveByGuildId,
 } from '@/services/objective.service.js';
@@ -211,7 +211,7 @@ If the problem persist, please contact the Bot Developer.`,
       !TYPES.includes(objectiveType) ||
       !RARITIES.includes(objectiveRarity) ||
       !MAPS.includes(objectiveMap) ||
-      !(/^\d{1,2}:\d{1,2}$/m).test(objectiveTime)
+      !(/^(?:[01]?\d|2[0-3]):[0-5]\d$/).test(objectiveTime)
     ) {
       logger.error({
         command: 'addObjective',
@@ -304,10 +304,7 @@ It will be available at ${time.format('HH:mm')} UTC (<t:${String(time.unix())}:R
 
         // Delete old objectives
         if (oldObjectives.length > 0) {
-          // Delete objectives
-          for (const objective of oldObjectives) {
-            await deleteObjective(objective.id);
-          }
+          await deleteObjectivesByIds(oldObjectives.map((o) => o.id));
         }
 
         if (currentObjectives.length > 0) {

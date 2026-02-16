@@ -1,4 +1,4 @@
-import type { FindOptions, InferAttributes } from '@sequelize/core';
+import { Op, type FindOptions, type InferAttributes } from '@sequelize/core';
 
 // Config
 import { getLogger } from '@/config/logger.js';
@@ -120,6 +120,26 @@ export const deleteObjective = async (id: number): Promise<number> => {
     return deletedCount;
   } catch (error) {
     logger.error({ error, objectiveId: id }, 'Failed to delete objective');
+
+    throw error;
+  }
+};
+
+export const deleteObjectivesByIds = async (ids: number[]): Promise<number> => {
+  const logger = getLogger();
+
+  if (ids.length === 0) {
+    return 0;
+  }
+
+  try {
+    const deletedCount = await ObjectiveModel.destroy({ where: { id: { [Op.in]: ids } } });
+
+    logger.info({ ids, deletedCount }, 'Objectives batch deleted');
+
+    return deletedCount;
+  } catch (error) {
+    logger.error({ error, ids }, 'Failed to batch delete objectives');
 
     throw error;
   }
