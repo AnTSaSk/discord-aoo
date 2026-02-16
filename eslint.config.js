@@ -74,41 +74,53 @@ const stylisticRules = {
 
 // TypeScript strict rules
 const typescriptStrictRules = {
-  '@typescript-eslint/no-unused-vars': ['error', {
-    argsIgnorePattern: '^_',
-    varsIgnorePattern: '^_',
-    caughtErrorsIgnorePattern: '^_',
-  }],
-  '@typescript-eslint/explicit-function-return-type': ['error', {
-    allowExpressions: true,
-    allowTypedFunctionExpressions: true,
-    allowHigherOrderFunctions: true,
-  }],
-  '@typescript-eslint/explicit-member-accessibility': ['error', {
-    accessibility: 'explicit',
-    overrides: {
-      constructors: 'no-public',
+  '@typescript-eslint/no-unused-vars': [
+    'error', {
+      argsIgnorePattern: '^_',
+      varsIgnorePattern: '^_',
+      caughtErrorsIgnorePattern: '^_',
     },
-  }],
+  ],
+  '@typescript-eslint/explicit-function-return-type': [
+    'error', {
+      allowExpressions: true,
+      allowTypedFunctionExpressions: true,
+      allowHigherOrderFunctions: true,
+    },
+  ],
+  '@typescript-eslint/explicit-member-accessibility': [
+    'error', {
+      accessibility: 'explicit',
+      overrides: {
+        constructors: 'no-public',
+      },
+    },
+  ],
   '@typescript-eslint/no-explicit-any': 'error',
   '@typescript-eslint/no-non-null-assertion': 'warn',
   '@typescript-eslint/prefer-nullish-coalescing': 'error',
   '@typescript-eslint/prefer-optional-chain': 'error',
-  '@typescript-eslint/strict-boolean-expressions': ['error', {
-    allowNullableBoolean: true,
-    allowNullableString: true,
-  }],
+  '@typescript-eslint/strict-boolean-expressions': [
+    'error', {
+      allowNullableBoolean: true,
+      allowNullableString: true,
+    },
+  ],
   '@typescript-eslint/no-floating-promises': 'error',
   '@typescript-eslint/await-thenable': 'error',
   '@typescript-eslint/no-misused-promises': 'error',
   '@typescript-eslint/require-await': 'error',
-  '@typescript-eslint/consistent-type-imports': ['error', {
-    prefer: 'type-imports',
-    fixStyle: 'inline-type-imports',
-  }],
-  '@typescript-eslint/consistent-type-exports': ['error', {
-    fixMixedExportsWithInlineTypeSpecifier: true,
-  }],
+  '@typescript-eslint/consistent-type-imports': [
+    'error', {
+      prefer: 'type-imports',
+      fixStyle: 'inline-type-imports',
+    },
+  ],
+  '@typescript-eslint/consistent-type-exports': [
+    'error', {
+      fixMixedExportsWithInlineTypeSpecifier: true,
+    },
+  ],
   '@typescript-eslint/naming-convention': [
     'error',
     // Default: camelCase for everything
