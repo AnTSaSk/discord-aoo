@@ -55,6 +55,9 @@ services:
     # NOTE: no-new-privileges is enforced at Docker daemon level (daemon.json)
     cap_drop:
       - ALL
+    # userns-remap creates /etc/resolv.conf with mode 640 — GID 0 is required
+    # to read it via the g::rx default ACL on the containers directory
+    user: "1001:0"
     read_only: true
     tmpfs:
       - /tmp:mode=1777,size=64m
