@@ -2,7 +2,7 @@
 # SEC-001: Prevent .env files with secrets from being committed.
 # Activated via: git config core.hooksPath .githooks
 
-STAGED_ENV=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^\.(env|env\.prod)$' || true)
+STAGED_ENV=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^\.env' || true)
 
 if [ -n "$STAGED_ENV" ]; then
   echo "ERROR: Blocked commit — .env file(s) with potential secrets staged:"

@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1
 # Multi-stage build for discord-bot-aoo
 # Stage 1: Build
-FROM node:24-alpine AS builder
+# SEC-014: Pinned by digest to prevent supply chain attacks on mutable tags
+FROM node:24-alpine@sha256:4f696fbf39f383c1e486030ba6b289a5d9af541642fc78ab197e584a113b9c03 AS builder
 
 WORKDIR /app
 
@@ -27,7 +28,8 @@ RUN pnpm build && \
     pnpm prune --prod
 
 # Stage 2: Production
-FROM node:24-alpine AS production
+# SEC-014: Pinned by digest to prevent supply chain attacks on mutable tags
+FROM node:24-alpine@sha256:4f696fbf39f383c1e486030ba6b289a5d9af541642fc78ab197e584a113b9c03 AS production
 
 WORKDIR /app
 
